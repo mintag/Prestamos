@@ -1,6 +1,7 @@
 package MineroTagle.prestamos;
 
 import MineroTagle.prestamos.db.DbHelper;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.view.View;
@@ -17,6 +18,7 @@ public class SeleccionaCliente extends AppCompatActivity {
     ListView listViewClientes;
     CardView btnBuscar;
     EditText editNombreCli;
+    Cursor fila;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,11 +31,12 @@ public class SeleccionaCliente extends AppCompatActivity {
         btnBuscar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                listaClientes.clear();
                 DbHelper dbHelper = new DbHelper(SeleccionaCliente.this);
 
                 SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-                Cursor fila = db.query(true, dbHelper.TABLE_CLIENTES, new String[] {"clienteid","nombre"},
+                fila = db.query(true, dbHelper.TABLE_CLIENTES, new String[] {"clienteid","nombre"},
                         "nombre LIKE ?", new String[] {editNombreCli.getText().toString() + "%"},
                         null, null, null, null);
 
@@ -53,14 +56,19 @@ public class SeleccionaCliente extends AppCompatActivity {
                 String datos[] = listaClientes.toArray(new String[listaClientes.size()]);
                 ArrayAdapter<String> adapter = new ArrayAdapter<String>(SeleccionaCliente.this, android.R.layout.simple_list_item_1, datos);
                 listViewClientes.setAdapter(adapter);
-                listaClientes.clear();
             }
         });
 
         listViewClientes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                if(fila.moveToPosition(position)) {
+                    Intent intent = new Intent(SeleccionaCliente.this, PerfilCliente.class);
+                    intent.putExtra("id",fila.getInt(0));
+                    startActivity(intent);
+                }else{
+                    Toast.makeText(SeleccionaCliente.this, "Error", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
